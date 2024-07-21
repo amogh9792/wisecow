@@ -6,9 +6,8 @@ on:
       - main
 
 jobs:
-  ci-cd:
+  build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -28,14 +27,24 @@ jobs:
         push: true
         tags: amogh9792/wisecow-app:latest
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v1
-      with:
-        version: '1.21.0'
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/v1.21.0/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+        kubectl version --client
+
+    - name: Set up kubeconfig
+      run: echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
 
     - name: Deploy to Kubernetes
       run: |
         kubectl apply -f wisecow-deployment.yaml
         kubectl apply -f wisecow-service.yaml
-      env:
-        KUBECONFIG: ${{ secrets.KUBECONFIG }}

@@ -34,6 +34,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Install AWS CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y awscli
+
+    - name: Configure AWS CLI
+      run: aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }} && \
+            aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }} && \
+            aws configure set region ${{ secrets.AWS_REGION }}
+
     - name: Install kubectl
       run: |
         curl -LO "https://dl.k8s.io/release/v1.21.0/bin/linux/amd64/kubectl"
@@ -41,12 +51,18 @@ jobs:
         sudo mv ./kubectl /usr/local/bin/kubectl
         kubectl version --client
 
+    - name: Install aws-iam-authenticator
+      run: |
+        curl -LO "https://d1uj6qtbmh3dt5.cloudfront.net/aws-iam-authenticator/0.5.0/linux/amd64/aws-iam-authenticator"
+        chmod +x ./aws-iam-authenticator
+        sudo mv ./aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
+
     - name: Set up kubeconfig
       run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+        aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name your-cluster-name
+        kubectl config view
 
     - name: Deploy to Kubernetes
       run: |
-        kubectl apply -f ./wisecow_deployment.yaml
-        kubectl apply -f ./wisecow_service.yaml
+        kubectl apply -f D:\wisecow\k8s\wiscow_deployment.yaml
+        kubectl apply -f D:\wisecow\k8s\wisecow_service.yaml

@@ -6,8 +6,9 @@ on:
       - main
 
 jobs:
-  build:
+  ci-cd:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -26,13 +27,6 @@ jobs:
       with:
         push: true
         tags: amogh9792/wisecow-app:latest
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
 
     - name: Set up kubectl
       uses: azure/setup-kubectl@v1

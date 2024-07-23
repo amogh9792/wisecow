@@ -35,25 +35,23 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+    - name: Set KUBECONFIG environment variable
+      run: |
+        # Download the kubeconfig from the secret and store it temporarily
+        echo ${{ secrets.KUBECONFIG }} | base64 -d > /tmp/kubeconfig
 
-    - name: Install kubectl
+        # Set the KUBECONFIG environment variable to point to the temporary file
+        export KUBECONFIG=/tmp/kubeconfig
+
+        # Optional: Verify kubeconfig content (remove for production)
+        # kubectl config view
+
+    - name: Install kubectl (optional, if not pre-installed)
       run: |
         curl -LO "https://dl.k8s.io/release/v1.21.0/bin/linux/amd64/kubectl"
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
         kubectl version --client
-
-    - name: Update kubeconfig
-      run: |
-        aws eks --region ap-south-1 update-kubeconfig --name eks-wisecow
-
-
 
     - name: Deploy to Kubernetes
       run: |

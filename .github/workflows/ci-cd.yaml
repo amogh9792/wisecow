@@ -20,5 +20,5 @@ jobs:
         docker push ${{ secrets.DOCKER_USERNAME }}/wisecow-app:latest
     - name: Apply Kubernetes manifests (local)  # Assuming local kubectl access
       run: |
-        kubectl apply -f wisecow_deployment.yaml
-        kubectl apply -f wisecow_service.yaml
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml

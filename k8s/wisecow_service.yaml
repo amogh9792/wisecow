@@ -1,19 +1,12 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  name: wisecow-deployment
+  name: wisecow-service
 spec:
-  replicas: 2  # Number of Pod replicas
   selector:
-    matchLabels:
-      app: wisecow
-  template:
-    metadata:
-      labels:
-        app: wisecow
-    spec:
-      containers:
-      - name: wisecow
-        image: amogh9792/wisecow-app:latest  # Replace with your actual Docker Hub username if needed
-        ports:
-        - containerPort: 5000  # Adjust port if needed
+    app: wisecow
+  type: LoadBalancer  # Adjust type if needed
+  ports:
+  - protocol: TCP
+    port: 80  # External port (adjust if needed)
+    targetPort: 5000  # Port the container exposes

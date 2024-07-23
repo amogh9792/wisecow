@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Deploy Wisecow App (Local & Remote)
 
 on:
   push:
@@ -27,7 +27,10 @@ jobs:
       uses: kubernetes-sigs/actions/download-kubectl@v3
       with:
         version: '1.24.0'  # Adjust version as needed
-    - name: Apply Kubernetes manifests
+    - name: Apply Kubernetes manifests (remote)
       run: |
+        # Configure kubectl for your remote cluster (replace with your setup)
+        # - Set server address (e.g., export KUBECTL_URL=https://your-cluster-server)
+        # - Set credentials (e.g., export KUBECTL_TOKEN=your-cluster-access-token)
         kubectl apply -f deployment.yaml
         kubectl apply -f service.yaml

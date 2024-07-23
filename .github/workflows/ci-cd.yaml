@@ -2,58 +2,32 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Log in to Docker Hub
+    - uses: actions/checkout@v3
+    - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-
     - name: Build and push Docker image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: amogh9792/wisecow-app:latest
-
-  deploy:
+      run: |
+        docker build -t amogh9792/wisecow-app:latest .
+        docker push amogh9792/wisecow-app:latest
+  deploy:  # This job can be conditionally triggered based on successful build
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-and-push  # This job depends on the previous job's success
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set KUBECONFIG environment variable
+    - uses: checkout@v3
+    - name: Use kubectl
+      uses: kubernetes-sigs/actions/download-kubectl@v3
+      with:
+        version: '1.24.0'  # Adjust version as needed
+    - name: Apply Kubernetes manifests
       run: |
-        # Download the kubeconfig from the secret and store it temporarily
-        echo ${{ secrets.KUBECONFIG }} | base64 -d > /tmp/kubeconfig
-
-        # Set the KUBECONFIG environment variable to point to the temporary file
-        export KUBECONFIG=/tmp/kubeconfig
-
-        # Optional: Verify kubeconfig content (remove for production)
-        # kubectl config view
-
-    - name: Install kubectl (optional, if not pre-installed)
-      run: |
-        curl -LO "https://dl.k8s.io/release/v1.21.0/bin/linux/amd64/kubectl"
-        chmod +x ./kubectl
-        sudo mv ./kubectl /usr/local/bin/kubectl
-        kubectl version --client
-
-    - name: Deploy to Kubernetes
-      run: |
-        kubectl apply -f k8s/wiscow_deployment.yaml
-        kubectl apply -f k8s/wiscow_service.yaml
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: wisecow-deployment
 spec:
-  replicas: 2
+  replicas: 2  # Number of Pod replicas
   selector:
     matchLabels:
       app: wisecow
@@ -13,7 +13,7 @@ spec:
         app: wisecow
     spec:
       containers:
-      - name: wisecow-container
-        image: amogh9792/wisecow-app:latest
+      - name: wisecow
+        image: amogh9792/wisecow-app:latest  # Replace with your registry URL
         ports:
-        - containerPort: 4499
+        - containerPort: 5000  # Adjust port if needed
